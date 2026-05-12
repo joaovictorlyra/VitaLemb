@@ -34,69 +34,87 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
     }
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.navyBlue, AppColors.darkNavy],
+      backgroundColor: AppColors.lightBackground,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _MedicationsHeader(takenCount: takenCount, total: total),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: groups.entries.map((group) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Text(
+                        group.key,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.lightTextSecondary,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    ...group.value.map((i) => _MedTile(
+                          med: mockMedications[i],
+                          taken: _taken[i] ?? false,
+                          onToggle: () => setState(() => _taken[i] = !(_taken[i] ?? false)),
+                        )),
+                  ],
+                );
+              }).toList(),
+            ),
           ),
+        ],
+      ),
+      bottomNavigationBar: AppBottomNavBar(currentIndex: 1, onTap: _onNavTap),
+    );
+  }
+}
+
+class _MedicationsHeader extends StatelessWidget {
+  final int takenCount;
+  final int total;
+
+  const _MedicationsHeader({required this.takenCount, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.navyBlue, AppColors.primaryBlue],
         ),
-        child: SafeArea(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      const Text('💊', style: TextStyle(fontSize: 22)),
-                      const SizedBox(width: 8),
-                      const Text('Remédios Hoje', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                    ]),
-                    const SizedBox(height: 4),
-                    const Text('Domingo, 3 de maio', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                    const SizedBox(height: 16),
-                    _ProgressBar(taken: takenCount, total: total),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: groups.entries.map((group) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Text(
-                            group.key,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textSecondary,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
-                        ...group.value.map((i) => _MedTile(
-                              med: mockMedications[i],
-                              taken: _taken[i] ?? false,
-                              onToggle: () => setState(() => _taken[i] = !(_taken[i] ?? false)),
-                            )),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
+              const Row(children: [
+                Text('💊', style: TextStyle(fontSize: 22)),
+                SizedBox(width: 8),
+                Text('Remédios Hoje', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+              ]),
+              const SizedBox(height: 4),
+              const Text('Domingo, 3 de maio', style: TextStyle(color: Colors.white70, fontSize: 13)),
+              const SizedBox(height: 16),
+              _ProgressBar(taken: takenCount, total: total),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomNavBar(currentIndex: 1, onTap: _onNavTap),
     );
   }
 }
@@ -114,15 +132,15 @@ class _ProgressBar extends StatelessWidget {
       children: [
         Text(
           '$taken de $total tomados',
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
         const SizedBox(height: 6),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: progress,
-            backgroundColor: AppColors.divider,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+            backgroundColor: Colors.white.withValues(alpha: 0.25),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             minHeight: 8,
           ),
         ),
@@ -147,18 +165,24 @@ class _MedTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.navyBlue,
+          color: AppColors.lightCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: taken ? AppColors.successGreen.withOpacity(0.4) : AppColors.divider,
+          border: Border(
+            left: BorderSide(
+              color: taken ? AppColors.successGreen : AppColors.primaryBlue,
+              width: 4,
+            ),
           ),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
+          ],
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: taken ? AppColors.successGreen.withOpacity(0.15) : AppColors.primaryBlue.withOpacity(0.15),
+                color: AppColors.lightBackground,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Text('💊', style: TextStyle(fontSize: 20)),
@@ -168,9 +192,9 @@ class _MedTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(med.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
-                  Text(med.dosage, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                  Text(med.time, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                  Text(med.name, style: const TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w600, fontSize: 15)),
+                  Text(med.dosage, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
+                  Text(med.time, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
                 ],
               ),
             ),
@@ -181,7 +205,7 @@ class _MedTile extends StatelessWidget {
               decoration: BoxDecoration(
                 color: taken ? AppColors.successGreen : Colors.transparent,
                 border: Border.all(
-                  color: taken ? AppColors.successGreen : AppColors.textSecondary,
+                  color: taken ? AppColors.successGreen : AppColors.lightTextSecondary,
                   width: 2,
                 ),
                 shape: BoxShape.circle,

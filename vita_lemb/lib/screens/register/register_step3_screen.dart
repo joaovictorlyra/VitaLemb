@@ -15,124 +15,146 @@ class _RegisterStep3ScreenState extends State<RegisterStep3Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.navyBlue, AppColors.darkNavy],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                      ),
+      backgroundColor: AppColors.lightBackground,
+      body: Column(
+        children: [
+          _Step3Header(onBack: () => Navigator.pop(context)),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Contato de emergência',
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.lightText),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Quem ligar em caso de urgência?',
+                    style: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
                     ),
-                    Expanded(child: _stepIndicator()),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                const Text(
-                  'Contato de emergência',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Quem ligar em caso de urgência?',
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primaryBlue.withOpacity(0.4)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: AppColors.primaryBlue, size: 20),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Este contato será automaticamente acionado ao pressionar o botão de ajuda.',
-                          style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: AppColors.primaryBlue, size: 20),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Este contato será automaticamente acionado ao pressionar o botão de ajuda.',
+                            style: TextStyle(color: AppColors.lightText, fontSize: 13, height: 1.4),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                _label('Nome do contato'),
-                const SizedBox(height: 8),
-                _input(hint: 'Ex: Maria Silva', icon: Icons.person_outline),
-                const SizedBox(height: 20),
-                _label('Parentesco'),
-                const SizedBox(height: 10),
-                _RelationChips(selected: _relation, onSelect: (v) => setState(() => _relation = v)),
-                const SizedBox(height: 20),
-                _label('Telefone'),
-                const SizedBox(height: 8),
-                _input(hint: '(71) 9999-9999', icon: Icons.phone_outlined),
-                const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: () => Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HomeScreen()),
-                    (_) => false,
+                  const SizedBox(height: 24),
+                  _label('Nome do contato'),
+                  const SizedBox(height: 8),
+                  _input(hint: 'Ex: Maria Silva', icon: Icons.person_outline),
+                  const SizedBox(height: 20),
+                  _label('Parentesco'),
+                  const SizedBox(height: 10),
+                  _RelationChips(selected: _relation, onSelect: (v) => setState(() => _relation = v)),
+                  const SizedBox(height: 20),
+                  _label('Telefone'),
+                  const SizedBox(height: 8),
+                  _input(hint: '(71) 9999-9999', icon: Icons.phone_outlined),
+                  const SizedBox(height: 40),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                      (_) => false,
+                    ),
+                    child: const Text('Concluir cadastro'),
                   ),
-                  child: const Text('Concluir cadastro'),
-                ),
-                const SizedBox(height: 24),
-              ],
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _label(String text) => Text(
         text,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14),
+        style: const TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w500, fontSize: 14),
       );
 
   Widget _input({required String hint, required IconData icon}) {
     return TextField(
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: AppColors.lightText),
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),
+        prefixIcon: Icon(icon, color: AppColors.lightTextSecondary, size: 20),
       ),
     );
   }
+}
 
-  Widget _stepIndicator() {
-    return Row(
-      children: List.generate(3, (i) {
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 3),
-            child: Container(
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue,
-                borderRadius: BorderRadius.circular(2),
+class _Step3Header extends StatelessWidget {
+  final VoidCallback onBack;
+  const _Step3Header({required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.navyBlue, AppColors.primaryBlue],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: onBack,
+                child: const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                ),
               ),
-            ),
+              Expanded(
+                child: Row(
+                  children: List.generate(3, (i) {
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: Container(
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
           ),
-        );
-      }),
+        ),
+      ),
     );
   }
 }
@@ -156,16 +178,19 @@ class _RelationChips extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primaryBlue : AppColors.navyBlue,
+              color: isSelected ? AppColors.primaryBlue : AppColors.lightCard,
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: isSelected ? AppColors.primaryBlue : AppColors.divider,
+                color: isSelected ? AppColors.primaryBlue : AppColors.lightDivider,
               ),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1)),
+              ],
             ),
             child: Text(
               e.value,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
+                color: isSelected ? Colors.white : AppColors.lightTextSecondary,
                 fontWeight: FontWeight.w500,
               ),
             ),

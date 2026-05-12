@@ -37,62 +37,75 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.navyBlue, AppColors.darkNavy],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Row(
-                  children: [
-                    const Text('🩺', style: TextStyle(fontSize: 22)),
-                    const SizedBox(width: 8),
-                    const Text('Pressão Arterial', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _NewMeasurementCard(
-                        systolicCtrl: _systolicCtrl,
-                        diastolicCtrl: _diastolicCtrl,
-                        saved: _saved,
-                        onSave: () => setState(() => _saved = true),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'ÚLTIMOS 7 DIAS',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 1.2),
-                      ),
-                      const SizedBox(height: 12),
-                      _BpChart(),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'MEDIÇÕES',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 1.2),
-                      ),
-                      const SizedBox(height: 12),
-                      ...mockBpReadings.map((r) => _ReadingTile(reading: r)),
-                    ],
+      backgroundColor: AppColors.lightBackground,
+      body: Column(
+        children: [
+          _BpHeader(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _NewMeasurementCard(
+                    systolicCtrl: _systolicCtrl,
+                    diastolicCtrl: _diastolicCtrl,
+                    saved: _saved,
+                    onSave: () => setState(() => _saved = true),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'ÚLTIMOS 7 DIAS',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.lightTextSecondary, letterSpacing: 1.2),
+                  ),
+                  const SizedBox(height: 12),
+                  _BpChart(),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'MEDIÇÕES',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.lightTextSecondary, letterSpacing: 1.2),
+                  ),
+                  const SizedBox(height: 12),
+                  ...mockBpReadings.map((r) => _ReadingTile(reading: r)),
+                ],
               ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: AppBottomNavBar(currentIndex: 3, onTap: _onNavTap),
+    );
+  }
+}
+
+class _BpHeader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.navyBlue, AppColors.primaryBlue],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Row(
+            children: const [
+              Text('🩺', style: TextStyle(fontSize: 22)),
+              SizedBox(width: 8),
+              Text('Pressão Arterial', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomNavBar(currentIndex: 3, onTap: _onNavTap),
     );
   }
 }
@@ -115,14 +128,16 @@ class _NewMeasurementCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.navyBlue,
+        color: AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Nova medição', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
+          const Text('Nova medição', style: TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w600, fontSize: 16)),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -156,19 +171,19 @@ class _BpInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, letterSpacing: 1)),
+        Text(label, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 11, letterSpacing: 1)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: AppColors.lightText, fontSize: 28, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
             filled: true,
-            fillColor: AppColors.darkNavy,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.divider)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.divider)),
+            fillColor: AppColors.lightBackground,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.lightDivider)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.lightDivider)),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2)),
           ),
         ),
@@ -184,9 +199,11 @@ class _BpChart extends StatelessWidget {
       height: 180,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.navyBlue,
+        color: AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Column(
         children: [
@@ -213,7 +230,7 @@ class _BpChart extends StatelessWidget {
                         const labels = ['D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'D-1', 'Hj'];
                         final i = v.toInt();
                         if (i < 0 || i >= labels.length) return const SizedBox();
-                        return Text(labels[i], style: const TextStyle(color: AppColors.textSecondary, fontSize: 10));
+                        return Text(labels[i], style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 10));
                       },
                     ),
                   ),
@@ -262,7 +279,7 @@ class _Legend extends StatelessWidget {
       children: [
         Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+        Text(label, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 11)),
       ],
     );
   }
@@ -286,9 +303,11 @@ class _ReadingTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.navyBlue,
+        color: AppColors.lightCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
       ),
       child: Row(
         children: [
@@ -298,16 +317,16 @@ class _ReadingTile extends StatelessWidget {
               children: [
                 Text(
                   '${reading.systolic}/${reading.diastolic}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                  style: const TextStyle(color: AppColors.lightText, fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                Text(reading.label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                Text(reading.label, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: _statusColor.withOpacity(0.15),
+              color: _statusColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(

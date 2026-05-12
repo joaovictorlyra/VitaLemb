@@ -38,52 +38,44 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.navyBlue, AppColors.darkNavy],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _Header(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _EmergencyButton(),
-                      const SizedBox(height: 20),
-                      _SectionTitle(title: 'PRÓXIMOS REMÉDIOS'),
-                      const SizedBox(height: 12),
-                      _MedicationCard(
-                        name: 'Losartana',
-                        dosage: '25mg',
-                        detail: '1 comprimido · 08:00',
-                        confirmed: false,
-                      ),
-                      const SizedBox(height: 10),
-                      _MedicationCard(
-                        name: 'Hidroclorotiazida',
-                        dosage: '25mg',
-                        detail: '1 comprimido · 12:00',
-                        confirmed: true,
-                      ),
-                      const SizedBox(height: 20),
-                      _SectionTitle(title: 'ÚLTIMA MEDIÇÃO'),
-                      const SizedBox(height: 12),
-                      _BpSummaryCard(),
-                    ],
+      backgroundColor: AppColors.lightBackground,
+      body: Column(
+        children: [
+          _Header(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SectionLabel(icon: '⚠️', title: 'EMERGÊNCIA'),
+                  const SizedBox(height: 10),
+                  _EmergencyButton(),
+                  const SizedBox(height: 20),
+                  _SectionLabel(icon: '💊', title: 'PRÓXIMOS REMÉDIOS'),
+                  const SizedBox(height: 10),
+                  _MedicationCard(
+                    name: 'Losartana',
+                    dosage: '25mg',
+                    detail: '1 comprimido · 08:00',
+                    confirmed: false,
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  _MedicationCard(
+                    name: 'Hidroclorotiazida',
+                    dosage: '25mg',
+                    detail: '1 comprimido · 12:00',
+                    confirmed: true,
+                  ),
+                  const SizedBox(height: 20),
+                  _SectionLabel(icon: '🩺', title: 'ÚLTIMA MEDIÇÃO'),
+                  const SizedBox(height: 10),
+                  _BpSummaryCard(),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: AppBottomNavBar(currentIndex: _navIndex, onTap: _onNavTap),
     );
@@ -93,34 +85,102 @@ class _HomeScreenState extends State<HomeScreen> {
 class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      MockUser.name,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.navyBlue, AppColors.primaryBlue],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Bom dia,',
+                          style: TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w400),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              MockUser.name,
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text('👴', style: TextStyle(fontSize: 20)),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    const Text('🌟', style: TextStyle(fontSize: 18)),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    child: const Text('JS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('📅', style: TextStyle(fontSize: 13)),
+                    SizedBox(width: 6),
+                    Text(
+                      'Domingo, 3 de maio',
+                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
-                const Text('Domingo, 3 de maio', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-              ],
-            ),
+              ),
+            ],
           ),
-          CircleAvatar(
-            backgroundColor: AppColors.primaryBlue.withOpacity(0.3),
-            child: const Text('JS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
+        ),
       ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String icon;
+  final String title;
+  const _SectionLabel({required this.icon, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(icon, style: const TextStyle(fontSize: 13)),
+        const SizedBox(width: 6),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: AppColors.lightTextSecondary,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -132,11 +192,11 @@ class _EmergencyButton extends StatelessWidget {
       onTap: () => showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          backgroundColor: AppColors.navyBlue,
-          title: const Text('Chamar Ajuda', style: TextStyle(color: Colors.white)),
+          backgroundColor: AppColors.lightCard,
+          title: const Text('Chamar Ajuda', style: TextStyle(color: AppColors.lightText)),
           content: const Text(
             'Ligar para Maria Silva\n(71) 9999-9999?',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.lightTextSecondary),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
@@ -154,7 +214,7 @@ class _EmergencyButton extends StatelessWidget {
           color: AppColors.emergencyRed,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(color: AppColors.emergencyRed.withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6)),
+            BoxShadow(color: AppColors.emergencyRed.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 6)),
           ],
         ),
         child: Row(
@@ -162,7 +222,7 @@ class _EmergencyButton extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text('🆘', style: TextStyle(fontSize: 24)),
@@ -177,24 +237,6 @@ class _EmergencyButton extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textSecondary,
-        letterSpacing: 1.2,
       ),
     );
   }
@@ -218,16 +260,24 @@ class _MedicationCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.navyBlue,
+        color: AppColors.lightCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.divider),
+        border: Border(
+          left: BorderSide(
+            color: confirmed ? AppColors.successGreen : AppColors.primaryBlue,
+            width: 4,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.15),
+              color: AppColors.lightBackground,
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Text('💊', style: TextStyle(fontSize: 20)),
@@ -239,9 +289,9 @@ class _MedicationCard extends StatelessWidget {
               children: [
                 Text(
                   '$name $dosage',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
+                  style: const TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w600, fontSize: 15),
                 ),
-                Text(detail, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                Text(detail, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
               ],
             ),
           ),
@@ -249,19 +299,19 @@ class _MedicationCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.successGreen.withOpacity(0.15),
+                color: AppColors.successGreen,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text('Confirmado!', style: TextStyle(color: AppColors.successGreen, fontSize: 12, fontWeight: FontWeight.w600)),
+              child: const Text('✓ OK', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
             )
           else
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.warningOrange.withOpacity(0.15),
+                color: AppColors.warningOrange,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text('Pendente', style: TextStyle(color: AppColors.warningOrange, fontSize: 12, fontWeight: FontWeight.w600)),
+              child: const Text('Pendente', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
             ),
         ],
       ),
@@ -275,48 +325,40 @@ class _BpSummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.navyBlue,
+        color: AppColors.lightCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('138/88', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 4),
-          const Text('mai 29 • 15:16', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          const SizedBox(height: 10),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _StatChip(label: 'Sistólica', value: '138', color: AppColors.primaryBlue),
-              const SizedBox(width: 8),
-              _StatChip(label: 'Diastólica', value: '88', color: AppColors.successGreen),
+              const Text(
+                '138/88',
+                style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.primaryBlue),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.warningOrange.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  '⚠️ Levemente Alto',
+                  style: TextStyle(color: AppColors.warningOrange, fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ),
             ],
           ),
+          const Text('mmHg', style: TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
+          const SizedBox(height: 4),
+          const Text('Hoje às 08:15', style: TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
         ],
-      ),
-    );
-  }
-}
-
-class _StatChip extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatChip({required this.label, required this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        '$label: $value',
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );
   }

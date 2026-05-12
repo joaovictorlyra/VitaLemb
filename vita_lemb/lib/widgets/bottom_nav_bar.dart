@@ -11,8 +11,11 @@ class AppBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: AppColors.navyBlue,
-        border: Border(top: BorderSide(color: AppColors.divider, width: 1)),
+        color: AppColors.lightNavBar,
+        border: Border(top: BorderSide(color: AppColors.lightDivider, width: 1)),
+        boxShadow: [
+          BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, -2)),
+        ],
       ),
       child: SafeArea(
         child: Padding(
@@ -56,7 +59,7 @@ class _NavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryBlue.withOpacity(0.2) : Colors.transparent,
+          color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -68,7 +71,7 @@ class _NavItem extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: isSelected ? AppColors.primaryBlue : AppColors.textSecondary,
+                color: isSelected ? AppColors.primaryBlue : AppColors.lightTextSecondary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

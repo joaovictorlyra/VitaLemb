@@ -9,103 +9,132 @@ class RegisterStep1Screen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.navyBlue, AppColors.darkNavy],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SplashScreen()),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                      ),
-                    ),
-                    const Expanded(child: _StepIndicator(current: 1)),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                const Text(
-                  'Criar sua conta',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Preencha seus dados pessoais',
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 32),
-                _buildLabel('Nome completo'),
-                const SizedBox(height: 8),
-                _buildInput(hint: 'Ex: João Silva', icon: Icons.person_outline),
-                const SizedBox(height: 20),
-                _buildLabel('Data de nascimento'),
-                const SizedBox(height: 8),
-                _buildInput(hint: 'DD/MM/AAAA', icon: Icons.calendar_today_outlined),
-                const SizedBox(height: 20),
-                _buildLabel('Telefone'),
-                const SizedBox(height: 8),
-                _buildInput(hint: '(71) 9999-9999', icon: Icons.phone_outlined),
-                const SizedBox(height: 20),
-                _buildLabel('Senha'),
-                const SizedBox(height: 8),
-                _buildInput(hint: 'Mínimo 8 caracteres', icon: Icons.lock_outline, obscure: true),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Icon(Icons.security, size: 14, color: AppColors.textSecondary),
-                    const SizedBox(width: 6),
-                    const Expanded(
-                      child: Text(
-                        'Seus dados são protegidos e nunca compartilhados sem sua autorização.',
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RegisterStep2Screen()),
-                  ),
-                  child: const Text('Continuar →'),
-                ),
-                const SizedBox(height: 24),
-              ],
+      backgroundColor: AppColors.lightBackground,
+      body: Column(
+        children: [
+          _RegisterHeader(
+            current: 1,
+            onBack: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const SplashScreen()),
             ),
           ),
-        ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Criar sua conta',
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.lightText),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Preencha seus dados pessoais',
+                    style: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildLabel('Nome completo'),
+                  const SizedBox(height: 8),
+                  _buildInput(hint: 'Ex: João Silva', icon: Icons.person_outline),
+                  const SizedBox(height: 20),
+                  _buildLabel('Data de nascimento'),
+                  const SizedBox(height: 8),
+                  _buildInput(hint: 'DD/MM/AAAA', icon: Icons.calendar_today_outlined),
+                  const SizedBox(height: 20),
+                  _buildLabel('Telefone'),
+                  const SizedBox(height: 8),
+                  _buildInput(hint: '(71) 9999-9999', icon: Icons.phone_outlined),
+                  const SizedBox(height: 20),
+                  _buildLabel('Senha'),
+                  const SizedBox(height: 8),
+                  _buildInput(hint: 'Mínimo 8 caracteres', icon: Icons.lock_outline, obscure: true),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(Icons.security, size: 14, color: AppColors.lightTextSecondary),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                        child: Text(
+                          'Seus dados são protegidos e nunca compartilhados sem sua autorização.',
+                          style: TextStyle(fontSize: 12, color: AppColors.lightTextSecondary),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RegisterStep2Screen()),
+                    ),
+                    child: const Text('Continuar →'),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLabel(String text) => Text(
         text,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14),
+        style: const TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w500, fontSize: 14),
       );
 
   Widget _buildInput({required String hint, required IconData icon, bool obscure = false}) {
     return TextField(
       obscureText: obscure,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: AppColors.lightText),
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),
+        prefixIcon: Icon(icon, color: AppColors.lightTextSecondary, size: 20),
+      ),
+    );
+  }
+}
+
+class _RegisterHeader extends StatelessWidget {
+  final int current;
+  final VoidCallback onBack;
+
+  const _RegisterHeader({required this.current, required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.navyBlue, AppColors.primaryBlue],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: onBack,
+                child: const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                ),
+              ),
+              Expanded(child: _StepIndicator(current: current)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -128,7 +157,7 @@ class _StepIndicator extends StatelessWidget {
               duration: const Duration(milliseconds: 300),
               height: 4,
               decoration: BoxDecoration(
-                color: (active || done) ? AppColors.primaryBlue : AppColors.divider,
+                color: (active || done) ? Colors.white : Colors.white.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
