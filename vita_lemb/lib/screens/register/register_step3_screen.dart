@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../home/home_screen.dart';
+import '../../widgets/feedback.dart';
+import '../main_shell.dart';
 
 class RegisterStep3Screen extends StatefulWidget {
   const RegisterStep3Screen({super.key});
@@ -10,7 +11,49 @@ class RegisterStep3Screen extends StatefulWidget {
 }
 
 class _RegisterStep3ScreenState extends State<RegisterStep3Screen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   int _relation = 0;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _finish() async {
+    if (!_formKey.currentState!.validate()) {
+      AppFeedback.warning(context, 'Verifique os campos destacados');
+      return;
+    }
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.lightCard,
+        icon: const Icon(Icons.check_circle, color: AppColors.successGreen, size: 48),
+        title: const Text('Conta criada com sucesso!', textAlign: TextAlign.center),
+        content: const Text(
+          'Tudo pronto. Vamos começar a cuidar da sua saúde.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppColors.lightTextSecondary),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Começar'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const MainShell()),
+      (_) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,62 +65,83 @@ class _RegisterStep3ScreenState extends State<RegisterStep3Screen> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Contato de emergência',
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.lightText),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Quem ligar em caso de urgência?',
-                    style: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Contato de emergência',
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.lightText),
                     ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.info_outline, color: AppColors.primaryBlue, size: 20),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Este contato será automaticamente acionado ao pressionar o botão de ajuda.',
-                            style: TextStyle(color: AppColors.lightText, fontSize: 13, height: 1.4),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Quem ligar em caso de urgência?',
+                      style: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.info_outline, color: AppColors.primaryBlue, size: 20),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Este contato será automaticamente acionado ao pressionar o botão de ajuda.',
+                              style: TextStyle(color: AppColors.lightText, fontSize: 13, height: 1.4),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  _label('Nome do contato'),
-                  const SizedBox(height: 8),
-                  _input(hint: 'Ex: Maria Silva', icon: Icons.person_outline),
-                  const SizedBox(height: 20),
-                  _label('Parentesco'),
-                  const SizedBox(height: 10),
-                  _RelationChips(selected: _relation, onSelect: (v) => setState(() => _relation = v)),
-                  const SizedBox(height: 20),
-                  _label('Telefone'),
-                  const SizedBox(height: 8),
-                  _input(hint: '(71) 9999-9999', icon: Icons.phone_outlined),
-                  const SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HomeScreen()),
-                      (_) => false,
+                    const SizedBox(height: 24),
+                    _label('Nome do contato'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _nameCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      style: const TextStyle(color: AppColors.lightText),
+                      decoration: const InputDecoration(
+                        hintText: 'Ex: Maria Silva',
+                        prefixIcon: Icon(Icons.person_outline, color: AppColors.lightTextSecondary, size: 20),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Informe o nome do contato' : null,
                     ),
-                    child: const Text('Concluir cadastro'),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                    const SizedBox(height: 20),
+                    _label('Parentesco'),
+                    const SizedBox(height: 10),
+                    _RelationChips(selected: _relation, onSelect: (v) => setState(() => _relation = v)),
+                    const SizedBox(height: 20),
+                    _label('Telefone'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _phoneCtrl,
+                      keyboardType: TextInputType.phone,
+                      style: const TextStyle(color: AppColors.lightText),
+                      decoration: const InputDecoration(
+                        hintText: '(71) 9999-9999',
+                        prefixIcon: Icon(Icons.phone_outlined, color: AppColors.lightTextSecondary, size: 20),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Informe o telefone';
+                        if (v.replaceAll(RegExp(r'\D'), '').length < 10) return 'Telefone inválido';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 40),
+                    ElevatedButton(
+                      onPressed: _finish,
+                      child: const Text('Concluir cadastro'),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),
@@ -90,16 +154,6 @@ class _RegisterStep3ScreenState extends State<RegisterStep3Screen> {
         text,
         style: const TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w500, fontSize: 14),
       );
-
-  Widget _input({required String hint, required IconData icon}) {
-    return TextField(
-      style: const TextStyle(color: AppColors.lightText),
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.lightTextSecondary, size: 20),
-      ),
-    );
-  }
 }
 
 class _Step3Header extends StatelessWidget {

@@ -31,7 +31,7 @@ class AppTheme {
   static ThemeData get theme => ThemeData(
         useMaterial3: true,
         fontFamily: 'Roboto',
-        colorScheme: ColorScheme.light(
+        colorScheme: const ColorScheme.light(
           primary: AppColors.primaryBlue,
           surface: AppColors.lightCard,
           onSurface: AppColors.lightText,
@@ -79,7 +79,7 @@ class AppTheme {
   static ThemeData get darkTheme => ThemeData(
         useMaterial3: true,
         fontFamily: 'Roboto',
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: AppColors.primaryBlue,
           surface: AppColors.navyBlue,
           onSurface: AppColors.textOnDark,

@@ -1,88 +1,77 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/bottom_nav_bar.dart';
-import '../../models/mock_data.dart';
-import '../medications/medications_screen.dart';
-import '../blood_pressure/blood_pressure_screen.dart';
-import '../accessibility/accessibility_screen.dart';
+import '../../state/app_state.dart';
+import '../../widgets/feedback.dart';
+import '../profile/profile_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatelessWidget {
+  /// Chamado pelo link "Ver todos" para trocar para a aba de Remédios.
+  final VoidCallback? onSeeAllMeds;
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _navIndex = 0;
-
-  void _onNavTap(int index) {
-    if (index == _navIndex) return;
-    Widget target;
-    switch (index) {
-      case 1:
-        target = const MedicationsScreen();
-        break;
-      case 2:
-        target = const AccessibilityScreen();
-        break;
-      case 3:
-        target = const BloodPressureScreen();
-        break;
-      default:
-        return;
-    }
-    Navigator.push(context, MaterialPageRoute(builder: (_) => target));
-  }
+  const HomeScreen({super.key, this.onSeeAllMeds});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
-      body: Column(
-        children: [
-          _Header(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _SectionLabel(icon: '⚠️', title: 'EMERGÊNCIA'),
-                  const SizedBox(height: 10),
-                  _EmergencyButton(),
-                  const SizedBox(height: 20),
-                  _SectionLabel(icon: '💊', title: 'PRÓXIMOS REMÉDIOS'),
-                  const SizedBox(height: 10),
-                  _MedicationCard(
-                    name: 'Losartana',
-                    dosage: '25mg',
-                    detail: '1 comprimido · 08:00',
-                    confirmed: false,
-                  ),
-                  const SizedBox(height: 10),
-                  _MedicationCard(
-                    name: 'Hidroclorotiazida',
-                    dosage: '25mg',
-                    detail: '1 comprimido · 12:00',
-                    confirmed: true,
-                  ),
-                  const SizedBox(height: 20),
-                  _SectionLabel(icon: '🩺', title: 'ÚLTIMA MEDIÇÃO'),
-                  const SizedBox(height: 10),
-                  _BpSummaryCard(),
-                ],
+      body: ListenableBuilder(
+        // Reconstrói quando perfil, remédios ou pressão mudam.
+        listenable: Listenable.merge([profileStore, medicationStore, bpStore]),
+        builder: (context, _) {
+          return Column(
+            children: [
+              _Header(
+                onProfileTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                ),
               ),
-            ),
-          ),
-        ],
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _SectionLabel(icon: '⚠️', title: 'EMERGÊNCIA'),
+                      const SizedBox(height: 10),
+                      const _EmergencyButton(),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          const Expanded(child: _SectionLabel(icon: '💊', title: 'PRÓXIMO REMÉDIO')),
+                          TextButton(
+                            onPressed: onSeeAllMeds,
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              minimumSize: const Size(0, 32),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text('Ver todos →', style: TextStyle(color: AppColors.primaryBlue, fontSize: 13, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      _NextMedication(onSeeAll: onSeeAllMeds),
+                      const SizedBox(height: 20),
+                      const _SectionLabel(icon: '🩺', title: 'ÚLTIMA MEDIÇÃO'),
+                      const SizedBox(height: 10),
+                      const _BpSummaryCard(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
-      bottomNavigationBar: AppBottomNavBar(currentIndex: _navIndex, onTap: _onNavTap),
     );
   }
 }
 
 class _Header extends StatelessWidget {
+  final VoidCallback onProfileTap;
+  const _Header({required this.onProfileTap});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -116,9 +105,12 @@ class _Header extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            Text(
-                              MockUser.name,
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                            Flexible(
+                              child: Text(
+                                profileStore.firstName,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
                             ),
                             const SizedBox(width: 6),
                             const Text('👴', style: TextStyle(fontSize: 20)),
@@ -127,9 +119,16 @@ class _Header extends StatelessWidget {
                       ],
                     ),
                   ),
-                  CircleAvatar(
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    child: const Text('JS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  // Avatar abre a tela de perfil (editar dados / sair).
+                  GestureDetector(
+                    onTap: onProfileTap,
+                    child: Tooltip(
+                      message: 'Meu perfil',
+                      child: CircleAvatar(
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        child: Text(profileStore.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -186,22 +185,27 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _EmergencyButton extends StatelessWidget {
+  const _EmergencyButton();
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => showDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           backgroundColor: AppColors.lightCard,
           title: const Text('Chamar Ajuda', style: TextStyle(color: AppColors.lightText)),
-          content: const Text(
-            'Ligar para Maria Silva\n(71) 9999-9999?',
-            style: TextStyle(color: AppColors.lightTextSecondary),
+          content: Text(
+            'Ligar para ${profileStore.emergencyName}\n${profileStore.emergencyPhone}?',
+            style: const TextStyle(color: AppColors.lightTextSecondary),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                AppFeedback.success(context, 'Ligando para ${profileStore.emergencyName}...');
+              },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.emergencyRed),
               child: const Text('Ligar'),
             ),
@@ -228,12 +232,14 @@ class _EmergencyButton extends StatelessWidget {
               child: const Text('🆘', style: TextStyle(fontSize: 24)),
             ),
             const SizedBox(width: 14),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Chamar Ajuda', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                Text('Liga para seu contato de emergência', style: TextStyle(fontSize: 12, color: Colors.white70)),
-              ],
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Chamar Ajuda', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text('Liga para seu contato de emergência', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                ],
+              ),
             ),
           ],
         ),
@@ -242,86 +248,106 @@ class _EmergencyButton extends StatelessWidget {
   }
 }
 
-class _MedicationCard extends StatelessWidget {
-  final String name;
-  final String dosage;
-  final String detail;
-  final bool confirmed;
-
-  const _MedicationCard({
-    required this.name,
-    required this.dosage,
-    required this.detail,
-    required this.confirmed,
-  });
+/// Mostra somente o próximo remédio pendente (dashboard enxuto).
+class _NextMedication extends StatelessWidget {
+  final VoidCallback? onSeeAll;
+  const _NextMedication({this.onSeeAll});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.lightCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border(
-          left: BorderSide(
-            color: confirmed ? AppColors.successGreen : AppColors.primaryBlue,
-            width: 4,
-          ),
+    final next = medicationStore.nextPending;
+    if (next == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.successGreen.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.4)),
         ),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.lightBackground,
-              borderRadius: BorderRadius.circular(10),
+        child: const Row(
+          children: [
+            Icon(Icons.check_circle, color: AppColors.successGreen),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Tudo em dia! Nenhum remédio pendente.',
+                style: TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w500),
+              ),
             ),
-            child: const Text('💊', style: TextStyle(fontSize: 20)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$name $dosage',
-                  style: const TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w600, fontSize: 15),
-                ),
-                Text(detail, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
-              ],
+          ],
+        ),
+      );
+    }
+    return GestureDetector(
+      onTap: onSeeAll,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.lightCard,
+          borderRadius: BorderRadius.circular(14),
+          border: const Border(left: BorderSide(color: AppColors.primaryBlue, width: 4)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: AppColors.lightBackground, borderRadius: BorderRadius.circular(10)),
+              child: const Text('💊', style: TextStyle(fontSize: 20)),
             ),
-          ),
-          if (confirmed)
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(next.name, style: const TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w600, fontSize: 15)),
+                  Text('${next.dosage} · ${next.time}', style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
+                ],
+              ),
+            ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: AppColors.successGreen,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text('✓ OK', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: AppColors.warningOrange,
-                borderRadius: BorderRadius.circular(20),
-              ),
+              decoration: BoxDecoration(color: AppColors.warningOrange, borderRadius: BorderRadius.circular(20)),
               child: const Text('Pendente', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 class _BpSummaryCard extends StatelessWidget {
+  const _BpSummaryCard();
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'Risco':
+        return AppColors.riskTag;
+      case 'Atenção':
+        return AppColors.attentionTag;
+      default:
+        return AppColors.normalTag;
+    }
+  }
+
+  String _statusLabel(String status) {
+    switch (status) {
+      case 'Risco':
+        return '⚠️ Alto';
+      case 'Atenção':
+        return '⚠️ Levemente Alto';
+      default:
+        return '✓ Normal';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final latest = bpStore.latest;
+    final color = _statusColor(latest.status);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -337,27 +363,27 @@ class _BpSummaryCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '138/88',
-                style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.primaryBlue),
+              Text(
+                '${latest.systolic}/${latest.diastolic}',
+                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.primaryBlue),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.warningOrange.withValues(alpha: 0.15),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  '⚠️ Levemente Alto',
-                  style: TextStyle(color: AppColors.warningOrange, fontSize: 12, fontWeight: FontWeight.w600),
+                child: Text(
+                  _statusLabel(latest.status),
+                  style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
           const Text('mmHg', style: TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
           const SizedBox(height: 4),
-          const Text('Hoje às 08:15', style: TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
+          Text(latest.label, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 12)),
         ],
       ),
     );

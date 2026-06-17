@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../models/mock_data.dart';
-import '../medications/medications_screen.dart';
-import '../accessibility/accessibility_screen.dart';
+import '../../state/app_state.dart';
+import '../../widgets/feedback.dart';
 
 class BloodPressureScreen extends StatefulWidget {
   const BloodPressureScreen({super.key});
@@ -14,24 +14,37 @@ class BloodPressureScreen extends StatefulWidget {
 }
 
 class _BloodPressureScreenState extends State<BloodPressureScreen> {
-  final _systolicCtrl = TextEditingController(text: '138');
-  final _diastolicCtrl = TextEditingController(text: '88');
-  bool _saved = false;
-
-  void _onNavTap(int index) {
-    if (index == 3) return;
-    Widget? target;
-    if (index == 1) target = const MedicationsScreen();
-    if (index == 2) target = const AccessibilityScreen();
-    if (index == 0) Navigator.popUntil(context, (r) => r.isFirst);
-    if (target != null) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => target!));
-  }
+  final _formKey = GlobalKey<FormState>();
+  final _systolicCtrl = TextEditingController();
+  final _diastolicCtrl = TextEditingController();
+  bool _justSaved = false;
 
   @override
   void dispose() {
     _systolicCtrl.dispose();
     _diastolicCtrl.dispose();
     super.dispose();
+  }
+
+  void _save() {
+    if (!_formKey.currentState!.validate()) {
+      AppFeedback.warning(context, 'Verifique os valores informados');
+      return;
+    }
+    final systolic = int.parse(_systolicCtrl.text.trim());
+    final diastolic = int.parse(_diastolicCtrl.text.trim());
+    bpStore.add(systolic: systolic, diastolic: diastolic, label: 'Agora');
+    setState(() => _justSaved = true);
+    AppFeedback.success(context, 'Medição $systolic/$diastolic registrada');
+    FocusScope.of(context).unfocus();
+  }
+
+  void _clear() {
+    _systolicCtrl.clear();
+    _diastolicCtrl.clear();
+    setState(() => _justSaved = false);
+    _formKey.currentState?.reset();
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -42,38 +55,49 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
         children: [
           _BpHeader(),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _NewMeasurementCard(
-                    systolicCtrl: _systolicCtrl,
-                    diastolicCtrl: _diastolicCtrl,
-                    saved: _saved,
-                    onSave: () => setState(() => _saved = true),
+            child: ListenableBuilder(
+              listenable: bpStore,
+              builder: (context, _) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Form(
+                        key: _formKey,
+                        child: _NewMeasurementCard(
+                          systolicCtrl: _systolicCtrl,
+                          diastolicCtrl: _diastolicCtrl,
+                          justSaved: _justSaved,
+                          onSave: _save,
+                          onClear: _clear,
+                          onChanged: () {
+                            if (_justSaved) setState(() => _justSaved = false);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'ÚLTIMOS 7 DIAS',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.lightTextSecondary, letterSpacing: 1.2),
+                      ),
+                      const SizedBox(height: 12),
+                      _BpChart(),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'MEDIÇÕES',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.lightTextSecondary, letterSpacing: 1.2),
+                      ),
+                      const SizedBox(height: 12),
+                      ...bpStore.readings.map((r) => _ReadingTile(reading: r)),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'ÚLTIMOS 7 DIAS',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.lightTextSecondary, letterSpacing: 1.2),
-                  ),
-                  const SizedBox(height: 12),
-                  _BpChart(),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'MEDIÇÕES',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.lightTextSecondary, letterSpacing: 1.2),
-                  ),
-                  const SizedBox(height: 12),
-                  ...mockBpReadings.map((r) => _ReadingTile(reading: r)),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
       ),
-      bottomNavigationBar: AppBottomNavBar(currentIndex: 3, onTap: _onNavTap),
     );
   }
 }
@@ -93,12 +117,12 @@ class _BpHeader extends StatelessWidget {
           bottomRight: Radius.circular(28),
         ),
       ),
-      child: SafeArea(
+      child: const SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 24),
           child: Row(
-            children: const [
+            children: [
               Text('🩺', style: TextStyle(fontSize: 22)),
               SizedBox(width: 8),
               Text('Pressão Arterial', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -113,14 +137,18 @@ class _BpHeader extends StatelessWidget {
 class _NewMeasurementCard extends StatelessWidget {
   final TextEditingController systolicCtrl;
   final TextEditingController diastolicCtrl;
-  final bool saved;
+  final bool justSaved;
   final VoidCallback onSave;
+  final VoidCallback onClear;
+  final VoidCallback onChanged;
 
   const _NewMeasurementCard({
     required this.systolicCtrl,
     required this.diastolicCtrl,
-    required this.saved,
+    required this.justSaved,
     required this.onSave,
+    required this.onClear,
+    required this.onChanged,
   });
 
   @override
@@ -140,19 +168,40 @@ class _NewMeasurementCard extends StatelessWidget {
           const Text('Nova medição', style: TextStyle(color: AppColors.lightText, fontWeight: FontWeight.w600, fontSize: 16)),
           const SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _BpInput(label: 'SISTÓLICA', controller: systolicCtrl)),
+              Expanded(child: _BpInput(label: 'SISTÓLICA', controller: systolicCtrl, max: 250, min: 70, onChanged: onChanged)),
               const SizedBox(width: 12),
-              Expanded(child: _BpInput(label: 'DIASTÓLICA', controller: diastolicCtrl)),
+              Expanded(child: _BpInput(label: 'DIASTÓLICA', controller: diastolicCtrl, max: 150, min: 40, onChanged: onChanged)),
             ],
           ),
           const SizedBox(height: 14),
-          ElevatedButton(
-            onPressed: saved ? null : onSave,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: saved ? AppColors.successGreen : AppColors.primaryBlue,
-            ),
-            child: Text(saved ? '✓ Salvo!' : 'Salvar Medição'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onClear,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.lightTextSecondary,
+                    side: const BorderSide(color: AppColors.lightDivider),
+                    minimumSize: const Size(0, 52),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  ),
+                  child: const Text('Limpar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: onSave,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: justSaved ? AppColors.successGreen : AppColors.primaryBlue,
+                  ),
+                  child: Text(justSaved ? '✓ Salvo!' : 'Salvar Medição'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -163,8 +212,17 @@ class _NewMeasurementCard extends StatelessWidget {
 class _BpInput extends StatelessWidget {
   final String label;
   final TextEditingController controller;
+  final int min;
+  final int max;
+  final VoidCallback onChanged;
 
-  const _BpInput({required this.label, required this.controller});
+  const _BpInput({
+    required this.label,
+    required this.controller,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -173,12 +231,15 @@ class _BpInput extends StatelessWidget {
       children: [
         Text(label, style: const TextStyle(color: AppColors.lightTextSecondary, fontSize: 11, letterSpacing: 1)),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: controller,
           keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
+          onChanged: (_) => onChanged(),
           style: const TextStyle(color: AppColors.lightText, fontSize: 28, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
           decoration: InputDecoration(
+            hintText: '—',
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
             filled: true,
             fillColor: AppColors.lightBackground,
@@ -186,6 +247,13 @@ class _BpInput extends StatelessWidget {
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.lightDivider)),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2)),
           ),
+          validator: (v) {
+            if (v == null || v.trim().isEmpty) return 'Obrigatório';
+            final n = int.tryParse(v.trim());
+            if (n == null) return 'Inválido';
+            if (n < min || n > max) return '$min–$max';
+            return null;
+          },
         ),
       ],
     );
@@ -207,10 +275,10 @@ class _BpChart extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Row(
+          const Row(
             children: [
               _Legend(color: AppColors.primaryBlue, label: 'Sistólica'),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               _Legend(color: AppColors.successGreen, label: 'Diastólica'),
             ],
           ),
@@ -234,11 +302,11 @@ class _BpChart extends StatelessWidget {
                       },
                     ),
                   ),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                gridData: FlGridData(show: false),
+                gridData: const FlGridData(show: false),
                 borderData: FlBorderData(show: false),
                 barGroups: List.generate(7, (i) {
                   return BarChartGroupData(
@@ -286,14 +354,17 @@ class _Legend extends StatelessWidget {
 }
 
 class _ReadingTile extends StatelessWidget {
-  final MockBpReading reading;
+  final BpReading reading;
   const _ReadingTile({required this.reading});
 
   Color get _statusColor {
     switch (reading.status) {
-      case 'Risco': return AppColors.riskTag;
-      case 'Atenção': return AppColors.attentionTag;
-      default: return AppColors.normalTag;
+      case 'Risco':
+        return AppColors.riskTag;
+      case 'Atenção':
+        return AppColors.attentionTag;
+      default:
+        return AppColors.normalTag;
     }
   }
 
