@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/input_formatters.dart';
 import '../../widgets/feedback.dart';
 import '../splash_screen.dart';
 import 'register_step2_screen.dart';
@@ -88,7 +89,8 @@ class _RegisterStep1ScreenState extends State<RegisterStep1Screen> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _birthCtrl,
-                      keyboardType: TextInputType.datetime,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [DateInputFormatter()],
                       style: const TextStyle(color: AppColors.lightText),
                       decoration: const InputDecoration(
                         hintText: 'DD/MM/AAAA',
@@ -106,9 +108,10 @@ class _RegisterStep1ScreenState extends State<RegisterStep1Screen> {
                     TextFormField(
                       controller: _phoneCtrl,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [PhoneInputFormatter()],
                       style: const TextStyle(color: AppColors.lightText),
                       decoration: const InputDecoration(
-                        hintText: '(71) 9999-9999',
+                        hintText: '(71) 99999-9999',
                         prefixIcon: Icon(Icons.phone_outlined, color: AppColors.lightTextSecondary, size: 20),
                       ),
                       validator: (v) {

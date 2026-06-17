@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/input_formatters.dart';
 import '../../widgets/feedback.dart';
 import '../main_shell.dart';
 
@@ -123,9 +124,10 @@ class _RegisterStep3ScreenState extends State<RegisterStep3Screen> {
                     TextFormField(
                       controller: _phoneCtrl,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [PhoneInputFormatter()],
                       style: const TextStyle(color: AppColors.lightText),
                       decoration: const InputDecoration(
-                        hintText: '(71) 9999-9999',
+                        hintText: '(71) 99999-9999',
                         prefixIcon: Icon(Icons.phone_outlined, color: AppColors.lightTextSecondary, size: 20),
                       ),
                       validator: (v) {

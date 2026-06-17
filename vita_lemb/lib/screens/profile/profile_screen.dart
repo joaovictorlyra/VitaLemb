@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state.dart';
+import '../../utils/input_formatters.dart';
 import '../../widgets/feedback.dart';
 import '../auth_actions.dart';
 
@@ -13,6 +15,9 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  // O perfil abre em modo de leitura; o usuário precisa tocar em "Editar".
+  bool _editing = false;
 
   late final _nameCtrl = TextEditingController(text: profileStore.name);
   late final _phoneCtrl = TextEditingController(text: profileStore.phone);
@@ -47,7 +52,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       phone: _ecPhoneCtrl.text.trim(),
       relation: _ecRelationCtrl.text.trim(),
     );
+    FocusScope.of(context).unfocus();
+    setState(() => _editing = false);
     AppFeedback.success(context, 'Perfil atualizado com sucesso');
+  }
+
+  void _startEditing() => setState(() => _editing = true);
+
+  void _cancelEditing() {
+    // Descarta alterações: restaura os campos com os valores salvos.
+    _nameCtrl.text = profileStore.name;
+    _phoneCtrl.text = profileStore.phone;
+    _birthCtrl.text = profileStore.birthDate;
+    _ecNameCtrl.text = profileStore.emergencyName;
+    _ecPhoneCtrl.text = profileStore.emergencyPhone;
+    _ecRelationCtrl.text = profileStore.emergencyRelation;
+    _formKey.currentState?.reset();
+    FocusScope.of(context).unfocus();
+    setState(() => _editing = false);
   }
 
   @override
@@ -73,13 +95,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 16),
                     _label('Telefone'),
                     const SizedBox(height: 8),
-                    _field(_phoneCtrl, hint: '(71) 9999-9999', icon: Icons.phone_outlined,
-                        keyboard: TextInputType.phone, validator: _phone),
+                    _field(_phoneCtrl, hint: '(71) 99999-9999', icon: Icons.phone_outlined,
+                        keyboard: TextInputType.phone, validator: _phone, formatters: [PhoneInputFormatter()]),
                     const SizedBox(height: 16),
                     _label('Data de nascimento'),
                     const SizedBox(height: 8),
                     _field(_birthCtrl, hint: 'DD/MM/AAAA', icon: Icons.calendar_today_outlined,
-                        keyboard: TextInputType.datetime, validator: _date),
+                        keyboard: TextInputType.number, validator: _date, formatters: [DateInputFormatter()]),
                     const SizedBox(height: 28),
                     const Text('CONTATO DE EMERGÊNCIA', style: _sectionStyle),
                     const SizedBox(height: 12),
@@ -93,22 +115,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 16),
                     _label('Telefone'),
                     const SizedBox(height: 8),
-                    _field(_ecPhoneCtrl, hint: '(71) 9999-9999', icon: Icons.phone_outlined,
-                        keyboard: TextInputType.phone, validator: _phone),
+                    _field(_ecPhoneCtrl, hint: '(71) 99999-9999', icon: Icons.phone_outlined,
+                        keyboard: TextInputType.phone, validator: _phone, formatters: [PhoneInputFormatter()]),
                     const SizedBox(height: 28),
-                    ElevatedButton(onPressed: _save, child: const Text('Salvar alterações')),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      onPressed: () => confirmAndLogout(context),
-                      icon: const Icon(Icons.logout, size: 20),
-                      label: const Text('Sair da conta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.emergencyRed,
-                        side: const BorderSide(color: AppColors.emergencyRed),
-                        minimumSize: const Size(double.infinity, 52),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    if (_editing) ...[
+                      ElevatedButton(onPressed: _save, child: const Text('Salvar alterações')),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: _cancelEditing,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.lightTextSecondary,
+                          side: const BorderSide(color: AppColors.lightDivider),
+                          minimumSize: const Size(double.infinity, 52),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        ),
+                        child: const Text('Cancelar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                       ),
-                    ),
+                    ] else ...[
+                      ElevatedButton.icon(
+                        onPressed: _startEditing,
+                        icon: const Icon(Icons.edit_outlined, size: 20),
+                        label: const Text('Editar dados'),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: () => confirmAndLogout(context),
+                        icon: const Icon(Icons.logout, size: 20),
+                        label: const Text('Sair da conta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.emergencyRed,
+                          side: const BorderSide(color: AppColors.emergencyRed),
+                          minimumSize: const Size(double.infinity, 52),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -144,14 +185,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required IconData icon,
     TextInputType? keyboard,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? formatters,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboard,
+      inputFormatters: formatters,
+      // Em modo de leitura os campos não são editáveis (só após "Editar").
+      readOnly: !_editing,
       style: const TextStyle(color: AppColors.lightText),
       decoration: InputDecoration(
         hintText: hint,
         prefixIcon: Icon(icon, color: AppColors.lightTextSecondary, size: 20),
+        filled: true,
+        fillColor: _editing ? AppColors.lightInputFill : AppColors.lightBackground,
       ),
       validator: validator,
     );

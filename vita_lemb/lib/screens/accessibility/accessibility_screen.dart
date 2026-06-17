@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state.dart';
+import '../../utils/input_formatters.dart';
 import '../../widgets/feedback.dart';
 import '../auth_actions.dart';
 
@@ -475,8 +476,9 @@ class _CaregiverFormSheetState extends State<_CaregiverFormSheet> {
                 TextFormField(
                   controller: _phoneCtrl,
                   keyboardType: TextInputType.phone,
+                  inputFormatters: [PhoneInputFormatter()],
                   style: const TextStyle(color: AppColors.lightText),
-                  decoration: const InputDecoration(hintText: '(71) 9999-9999', prefixIcon: Icon(Icons.phone_outlined, size: 20)),
+                  decoration: const InputDecoration(hintText: '(71) 99999-9999', prefixIcon: Icon(Icons.phone_outlined, size: 20)),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Informe o telefone';
                     if (v.replaceAll(RegExp(r'\D'), '').length < 10) return 'Telefone inválido';

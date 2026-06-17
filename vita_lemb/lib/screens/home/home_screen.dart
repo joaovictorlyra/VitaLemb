@@ -55,7 +55,9 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(height: 20),
                       const _SectionLabel(icon: '🩺', title: 'ÚLTIMA MEDIÇÃO'),
                       const SizedBox(height: 10),
-                      const _BpSummaryCard(),
+                      // Não-const de propósito: precisa reconstruir quando o
+                      // bpStore muda (nova medição salva).
+                      _BpSummaryCard(),
                     ],
                   ),
                 ),
@@ -320,8 +322,6 @@ class _NextMedication extends StatelessWidget {
 }
 
 class _BpSummaryCard extends StatelessWidget {
-  const _BpSummaryCard();
-
   Color _statusColor(String status) {
     switch (status) {
       case 'Risco':

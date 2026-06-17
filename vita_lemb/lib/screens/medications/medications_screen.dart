@@ -3,6 +3,7 @@ import '../../theme/app_theme.dart';
 import '../../models/mock_data.dart';
 import '../../state/app_state.dart';
 import '../../widgets/feedback.dart';
+import '../../widgets/time_wheel_picker.dart';
 
 class MedicationsScreen extends StatelessWidget {
   const MedicationsScreen({super.key});
@@ -344,10 +345,7 @@ class _MedicationFormSheetState extends State<_MedicationFormSheet> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: _time ?? const TimeOfDay(hour: 8, minute: 0),
-    );
+    final picked = await showTimeWheel(context, initial: _time);
     if (picked != null) setState(() => _time = picked);
   }
 

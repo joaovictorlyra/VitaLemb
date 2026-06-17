@@ -57,11 +57,12 @@ class BpReading {
   });
 }
 
-List<BpReading> seedBpReadings() => const [
-      BpReading(label: 'Ontem 14:15', systolic: 155, diastolic: 98, status: 'Risco'),
-      BpReading(label: 'Ontem 09:15', systolic: 183, diastolic: 62, status: 'Normal'),
-      BpReading(label: '2 dias', systolic: 142, diastolic: 90, status: 'Atenção'),
-      BpReading(label: '3 dias', systolic: 126, diastolic: 90, status: 'Normal'),
+// Lista modificável (growable): o BpStore precisa inserir novas medições.
+List<BpReading> seedBpReadings() => [
+      const BpReading(label: 'Ontem 14:15', systolic: 155, diastolic: 98, status: 'Risco'),
+      const BpReading(label: 'Ontem 09:15', systolic: 183, diastolic: 62, status: 'Normal'),
+      const BpReading(label: '2 dias', systolic: 142, diastolic: 90, status: 'Atenção'),
+      const BpReading(label: '3 dias', systolic: 126, diastolic: 90, status: 'Normal'),
     ];
 
 const mockChartSystolic = [138.0, 155.0, 183.0, 142.0, 126.0, 138.0, 140.0];
